@@ -5,121 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Jurnal Aktivitas Bayi</title>
   <style>
-    * {
-      box-sizing: border-box;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
-    body {
-      background-color: #f4f7f6;
-      margin: 0;
-      padding: 15px;
-      display: flex;
-      justify-content: center;
-    }
-    .container {
-      background: #ffffff;
-      width: 100%;
-      max-width: 480px;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
-    h2 {
-      text-align: center;
-      color: #333;
-      margin-top: 0;
-      margin-bottom: 20px;
-    }
-    .form-group {
-      margin-bottom: 15px;
-    }
-    label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: 600;
-      color: #444;
-      font-size: 14px;
-    }
-    input, select, textarea {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 15px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    input:focus, select:focus, textarea:focus {
-      border-color: #4CAF50;
-    }
-    .susu-group {
-      display: none;
-      background: #eef7ee;
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid #c8e6c9;
-      margin-bottom: 15px;
-    }
-    .time-row {
-      display: flex;
-      gap: 10px;
-    }
-    .time-row .form-group {
-      flex: 1;
-    }
-    button {
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      padding: 12px;
-      width: 100%;
-      font-size: 16px;
-      font-weight: bold;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-top: 10px;
-      transition: background-color 0.2s;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-    button:disabled {
-      background-color: #cccccc;
-      cursor: not-allowed;
-    }
-
-    /* Kartu Informasi Input Terakhir */
-    .last-entry-card {
-      margin-top: 25px;
-      padding: 15px;
-      background-color: #f0f7ff;
-      border: 1px solid #b3d7ff;
-      border-radius: 8px;
-    }
-    .last-entry-card h3 {
-      margin-top: 0;
-      margin-bottom: 10px;
-      font-size: 15px;
-      color: #0056b3;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .last-entry-card p {
-      margin: 4px 0;
-      font-size: 13px;
-      color: #333;
-    }
-    .last-entry-card p strong {
-      color: #111;
-    }
-    .btn-refresh {
-      font-size: 12px;
-      font-weight: normal;
-      color: #0056b3;
-      cursor: pointer;
-      text-decoration: underline;
-    }
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: #f4f7f6; margin: 0; padding: 15px; display: flex; justify-content: center; }
+    .container { background: #ffffff; width: 100%; max-width: 480px; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    h2 { text-align: center; color: #333; margin-top: 0; margin-bottom: 20px; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 6px; font-weight: 600; color: #444; font-size: 14px; }
+    input, select, textarea { width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; outline: none; }
+    input:focus, select:focus, textarea:focus { border-color: #4CAF50; }
+    .susu-group { display: none; background: #eef7ee; padding: 12px; border-radius: 8px; border: 1px solid #c8e6c9; margin-bottom: 15px; }
+    .time-row { display: flex; gap: 10px; }
+    .time-row .form-group { flex: 1; }
+    button { background-color: #4CAF50; color: white; border: none; padding: 12px; width: 100%; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 10px; }
+    button:hover { background-color: #45a049; }
+    button:disabled { background-color: #cccccc; cursor: not-allowed; }
+    .last-entry-card { margin-top: 25px; padding: 15px; background-color: #f0f7ff; border: 1px solid #b3d7ff; border-radius: 8px; }
+    .last-entry-card h3 { margin-top: 0; margin-bottom: 10px; font-size: 15px; color: #0056b3; display: flex; justify-content: space-between; align-items: center; }
+    .last-entry-card p { margin: 4px 0; font-size: 13px; color: #333; }
+    .btn-refresh { font-size: 12px; font-weight: normal; color: #0056b3; cursor: pointer; text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -157,7 +60,6 @@
       </select>
     </div>
 
-    <!-- Group Khusus Minum Susu -->
     <div id="susuFields" class="susu-group">
       <div class="form-group">
         <label for="jumlahSusu">Jumlah Susu (ml)</label>
@@ -187,13 +89,12 @@
 
     <div class="form-group">
       <label for="detailAktivitas">Detail / Catatan Aktivitas</label>
-      <textarea id="detailAktivitas" rows="3" placeholder="Catatan tambahan (misal: pup cair, tidur nyenyak)..."></textarea>
+      <textarea id="detailAktivitas" rows="3" placeholder="Catatan tambahan..."></textarea>
     </div>
 
     <button type="submit" id="btnSubmit">Simpan Data</button>
   </form>
 
-  <!-- Tampilan Input Terakhir dari Google Sheets -->
   <div id="lastEntry" class="last-entry-card">
     <h3>
       <span>Aktivitas Terakhir (Spreadsheet)</span>
@@ -206,18 +107,17 @@
 </div>
 
 <script>
-  // URL Web App Google Apps Script
-  const scriptURL = 'https://script.google.com/macros/s/AKfycbwmL8wZja7hkb5zh9sX_M6F4iVf1rvdvEc1YFUouA1wOQXX9QqzM3pw0s4-fo1YE8_WKg/exec';
+  // GANTI DENGAN URL WEB APP HASIL DEPLOY APPS SCRIPT ANDA
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbxYfo6266yg99cKLIWrpig7DaGahAMUmtHm8p22f4UXQxkm-uYZibUf8JVwjLvkW8KK7A/exec';
 
   window.addEventListener('DOMContentLoaded', () => {
     resetDateTime();
-    fetchLastEntryFromSheet(); // Ambil data terakhir dari Google Sheets saat pertama kali dibuka
+    fetchLastEntryFromSheet();
   });
 
   function resetDateTime() {
     const now = new Date();
     document.getElementById('tanggal').valueAsDate = now;
-    
     const jam = String(now.getHours()).padStart(2, '0');
     const menit = String(now.getMinutes()).padStart(2, '0');
     document.getElementById('jamMulai').value = `${jam}:${menit}`;
@@ -226,37 +126,32 @@
 
   function toggleSusuFields() {
     const me = document.getElementById('namaAktivitas').value;
-    const susuDiv = document.getElementById('susuFields');
-    susuDiv.style.display = (me === 'Minum Susu') ? 'block' : 'none';
+    document.getElementById('susuFields').style.display = (me === 'Minum Susu') ? 'block' : 'none';
   }
 
-  // Mengambil Data Baris Terakhir Langsung dari Google Sheets via GET Request
   function fetchLastEntryFromSheet() {
     const container = document.getElementById('lastEntryContent');
     container.innerHTML = '<p style="color: #666; font-style: italic;">Memuat data terbaru...</p>';
 
-    fetch(scriptURL)
-      .then(response => response.json())
+    fetch(`${scriptURL}?action=getLast`, { method: 'GET', redirect: 'follow' })
+      .then(res => res.json())
       .then(data => {
-        if (!data) {
+        if (!data || data.error) {
           container.innerHTML = '<p style="color: #777;">Belum ada data di Spreadsheet.</p>';
           return;
         }
 
         renderLastEntryUI(data);
       })
-      .catch(error => {
-        console.error('Error fetching data:', error);
+      .catch(err => {
+        console.error("Error fetching data:", err);
         container.innerHTML = '<p style="color: #d32f2f;">Gagal memuat data terakhir dari Spreadsheet.</p>';
       });
   }
 
-  // Fungsi untuk Menampilkan Data ke Komponen Kartu
   function renderLastEntryUI(data) {
     let waktuText = `${data.tanggal || ''} (${data.jamMulai || '-'}`;
-    if (data.jamSelesai) {
-      waktuText += ` - ${data.jamSelesai}`;
-    }
+    if (data.jamSelesai) waktuText += ` - ${data.jamSelesai}`;
     waktuText += `)`;
 
     let susuHTML = '';
@@ -272,24 +167,20 @@
       detailHTML = `<p><strong>Catatan:</strong> ${data.detailAktivitas}</p>`;
     }
 
-    const html = `
+    document.getElementById('lastEntryContent').innerHTML = `
       <p><strong>Aktivitas:</strong> ${data.namaAktivitas || '-'}</p>
       <p><strong>Waktu:</strong> ${waktuText}</p>
       <p><strong>Kondisi:</strong> ${data.kondisiBayi || '-'}</p>
       ${susuHTML}
       ${detailHTML}
     `;
-
-    document.getElementById('lastEntryContent').innerHTML = html;
   }
 
-  // Proses Submit Form
   const form = document.getElementById('babyForm');
   const btnSubmit = document.getElementById('btnSubmit');
 
   form.addEventListener('submit', e => {
     e.preventDefault();
-    
     btnSubmit.disabled = true;
     btnSubmit.innerText = 'Menyimpan...';
 
@@ -307,20 +198,15 @@
     fetch(scriptURL, {
       method: 'POST',
       mode: 'no-cors',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     })
     .then(() => {
       alert('Data aktivitas bayi berhasil disimpan!');
-
       form.reset();
       resetDateTime();
       toggleSusuFields();
-      
-      // Ambil kembali data terakhir dari Spreadsheet setelah penambahan data baru
-      setTimeout(fetchLastEntryFromSheet, 1000);
+      setTimeout(fetchLastEntryFromSheet, 1500);
     })
     .catch(error => {
       alert('Gagal mengirim data: ' + error.message);
