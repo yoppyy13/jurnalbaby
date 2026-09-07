@@ -97,7 +97,7 @@
   </div>
 
   <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbxHVD-XSTlHwkxxaSdbMNhKQa8uYq46XKJ3Gs5DEpFLon9Gv1CzG0npijrItkQym6DQHw/exec';
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbxtG0hSCDnqPmwMSfz2Mowim1EacsMcuv9a3n530X-rsT30Hmg_4Sbb_Rx-zV-ccRW9fA/exec';
 
     window.addEventListener('DOMContentLoaded', () => {
       resetDateTime();
@@ -118,7 +118,6 @@
       const isSusu = (me === 'Minum Susu');
       document.getElementById('susuFields').style.display = isSusu ? 'block' : 'none';
       
-      // Jika bukan Minum Susu, atur nilainya jadi kosong agar nanti terkirim sebagai "-"
       if (!isSusu) {
         document.getElementById('jumlahSusu').value = '';
         document.getElementById('sumberSusu').value = '';
@@ -141,6 +140,7 @@
       let menitMulai = h1 * 60 + m1;
       let menitSelesai = h2 * 60 + m2;
 
+      // Antisipasi jika aktivitas melewati tengah malam
       if (menitSelesai < menitMulai) {
         menitSelesai += 24 * 60;
       }
@@ -166,7 +166,7 @@
       submitBtn.innerText = 'Menyimpan...';
       statusMsg.innerText = '';
 
-      // Fungsi bantu untuk mengganti nilai kosong dengan "-"
+      // Fungsi otomatis mengubah nilai kosong menjadi "-"
       const getValueOrDash = (id) => {
         const val = document.getElementById(id).value.trim();
         return val !== '' ? val : '-';
