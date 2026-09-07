@@ -124,7 +124,7 @@
       </select>
     </div>
 
-    <!-- Opsi Tambahan Jika Memilih Minum Susu -->
+    <!-- Group Khusus Minum Susu -->
     <div id="susuFields" class="susu-group">
       <div class="form-group">
         <label for="jumlahSusu">Jumlah Susu (ml)</label>
@@ -162,27 +162,32 @@
 </div>
 
 <script>
-  // GANTI URL DI BAWAH INI DENGAN URL WEB APP DARI GOOGLE APPS SCRIPT ANDA
-  const scriptURL = 'https://script.google.com/macros/s/AKfycbwcz-tVL884urK3_fiaZCAGSjf79K70O2F-eY2KdBRA7-fSN5v0dk0dzzb88UXLBVfUxQ/exec';
+  // 1. GANTI DENGAN URL WEB APP HASIL DEPLOYMENT GOOGLE APPS SCRIPT ANDA
+  const scriptURL = 'https://script.google.com/macros/s/GANTI_DENGAN_URL_WEB_APP_ANDA/exec';
 
-  // Otomatis isi tanggal hari ini dan jam saat ini di form
+  // 2. Mengisi Tanggal & Jam Mulai Otomatis Saat Web Dibuka
   window.addEventListener('DOMContentLoaded', () => {
+    resetDateTime();
+  });
+
+  function resetDateTime() {
     const now = new Date();
     document.getElementById('tanggal').valueAsDate = now;
     
     const jam = String(now.getHours()).padStart(2, '0');
     const menit = String(now.getMinutes()).padStart(2, '0');
     document.getElementById('jamMulai').value = `${jam}:${menit}`;
-  });
+    document.getElementById('jamSelesai').value = '';
+  }
 
-  // Fungsi Tampil/Sembunyi Input Susu
+  // 3. Tampilkan/Sembunyikan Opsi Susu
   function toggleSusuFields() {
     const me = document.getElementById('namaAktivitas').value;
     const susuDiv = document.getElementById('susuFields');
     susuDiv.style.display = (me === 'Minum Susu') ? 'block' : 'none';
   }
 
-  // Pengiriman Data Form
+  // 4. Proses Pengiriman Data Form ke Apps Script
   const form = document.getElementById('babyForm');
   const btnSubmit = document.getElementById('btnSubmit');
 
@@ -205,7 +210,7 @@
 
     fetch(scriptURL, {
       method: 'POST',
-      mode: 'no-cors', // Mencegah blokir CORS di browser
+      mode: 'no-cors', // <-- Mencegah Blokir CORS/CORB di Browser
       headers: {
         'Content-Type': 'application/json'
       },
@@ -214,18 +219,11 @@
     .then(() => {
       alert('Data aktivitas bayi berhasil disimpan!');
       form.reset();
-      
-      // Reset ulang ke tanggal dan jam saat ini
-      const now = new Date();
-      document.getElementById('tanggal').valueAsDate = now;
-      const jam = String(now.getHours()).padStart(2, '0');
-      const menit = String(now.getMinutes()).padStart(2, '0');
-      document.getElementById('jamMulai').value = `${jam}:${menit}`;
-      
+      resetDateTime();
       toggleSusuFields();
     })
     .catch(error => {
-      alert('Gagal menyimpan data: ' + error.message);
+      alert('Gagal mengirim data: ' + error.message);
     })
     .finally(() => {
       btnSubmit.disabled = false;
