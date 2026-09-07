@@ -87,6 +87,32 @@
       background-color: #cccccc;
       cursor: not-allowed;
     }
+    /* Kartu Informasi Input Terakhir */
+    .last-entry-card {
+      display: none;
+      margin-top: 25px;
+      padding: 15px;
+      background-color: #f0f7ff;
+      border: 1px solid #b3d7ff;
+      border-radius: 8px;
+    }
+    .last-entry-card h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 15px;
+      color: #0056b3;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .last-entry-card p {
+      margin: 4px 0;
+      font-size: 13px;
+      color: #333;
+    }
+    .last-entry-card p strong {
+      color: #111;
+    }
   </style>
 </head>
 <body>
@@ -159,13 +185,23 @@
 
     <button type="submit" id="btnSubmit">Simpan Data</button>
   </form>
+
+  <!-- Tampilan Input Terakhir -->
+  <div id="lastEntry" class="last-entry-card">
+    <h3>Input Terakhir Tersimpan:</h3>
+    <p><strong>Aktivitas:</strong> <span id="lastAktivitas">-</span></p>
+    <p><strong>Waktu:</strong> <span id="lastWaktu">-</span></p>
+    <p><strong>Kondisi:</strong> <span id="lastKondisi">-</span></p>
+    <p id="lastSusuRow" style="display: none;"><strong>Susu:</strong> <span id="lastSusu">-</span></p>
+    <p id="lastDetailRow" style="display: none;"><strong>Catatan:</strong> <span id="lastDetail">-</span></p>
+  </div>
 </div>
 
 <script>
-  // 1. GANTI DENGAN URL WEB APP HASIL DEPLOYMENT GOOGLE APPS SCRIPT ANDA
+  // URL Web App Google Apps Script
   const scriptURL = 'https://script.google.com/macros/s/AKfycbzHb8W4KhTNKvHM7UGoVkJ6rqj6yTayfuCdKh9kSf0QUnufoHEYf5DZsF7oUbICLenJxQ/exec';
 
-  // 2. Mengisi Tanggal & Jam Mulai Otomatis Saat Web Dibuka
+  // 1. Mengisi Tanggal & Jam Mulai Otomatis Saat Web Dibuka
   window.addEventListener('DOMContentLoaded', () => {
     resetDateTime();
   });
@@ -180,14 +216,14 @@
     document.getElementById('jamSelesai').value = '';
   }
 
-  // 3. Tampilkan/Sembunyikan Opsi Susu
+  // 2. Tampilkan/Sembunyikan Opsi Susu
   function toggleSusuFields() {
     const me = document.getElementById('namaAktivitas').value;
     const susuDiv = document.getElementById('susuFields');
     susuDiv.style.display = (me === 'Minum Susu') ? 'block' : 'none';
   }
 
-  // 4. Proses Pengiriman Data Form ke Apps Script
+  // 3. Proses Pengiriman Data Form ke Apps Script
   const form = document.getElementById('babyForm');
   const btnSubmit = document.getElementById('btnSubmit');
 
@@ -210,7 +246,7 @@
 
     fetch(scriptURL, {
       method: 'POST',
-      mode: 'no-cors', // <-- Mencegah Blokir CORS/CORB di Browser
+      mode: 'no-cors',
       headers: {
         'Content-Type': 'application/json'
       },
@@ -218,6 +254,10 @@
     })
     .then(() => {
       alert('Data aktivitas bayi berhasil disimpan!');
+
+      // Update Tampilan Input Terakhir
+      showLastEntry(payload);
+
       form.reset();
       resetDateTime();
       toggleSusuFields();
@@ -230,6 +270,44 @@
       btnSubmit.innerText = 'Simpan Data';
     });
   });
+
+  // Fungsi memperbarui komponen Input Terakhir
+  function showLastEntry(data) {
+    document.getElementById('lastAktivitas').innerText = data.namaAktivitas;
+    
+    let waktuText = `${data.tanggal} (${data.jamMulai}`;
+    if (data.jamSelesai) {
+      waktuText += ` - ${data.jamSelesai}`;
+    }
+    waktuText += `)`;
+    document.getElementById('lastWaktu').innerText = waktuText;
+
+    document.getElementById('lastKondisi').innerText = data.kondisiBayi;
+
+    // Detail Susu jika ada
+    const lastSusuRow = document.getElementById('lastSusuRow');
+    if (data.namaAktivitas === 'Minum Susu' && (data.jumlahSusu || data.sumberSusu)) {
+      let susuDetail = '';
+      if (data.jumlahSusu) susuDetail += `${data.jumlahSusu} ml `;
+      if (data.sumberSusu) susuDetail += `(${data.sumberSusu})`;
+      document.getElementById('lastSusu').innerText = susuDetail;
+      lastSusuRow.style.display = 'block';
+    } else {
+      lastSusuRow.style.display = 'none';
+    }
+
+    // Detail Catatan jika ada
+    const lastDetailRow = document.getElementById('lastDetailRow');
+    if (data.detailAktivitas.trim() !== '') {
+      document.getElementById('lastDetail').innerText = data.detailAktivitas;
+      lastDetailRow.style.display = 'block';
+    } else {
+      lastDetailRow.style.display = 'none';
+    }
+
+    // Tampilkan kotak info
+    document.getElementById('lastEntry').style.display = 'block';
+  }
 </script>
 
 </body>
