@@ -87,9 +87,9 @@
       background-color: #cccccc;
       cursor: not-allowed;
     }
+
     /* Kartu Informasi Input Terakhir */
     .last-entry-card {
-      display: none;
       margin-top: 25px;
       padding: 15px;
       background-color: #f0f7ff;
@@ -102,8 +102,8 @@
       font-size: 15px;
       color: #0056b3;
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 6px;
     }
     .last-entry-card p {
       margin: 4px 0;
@@ -112,6 +112,13 @@
     }
     .last-entry-card p strong {
       color: #111;
+    }
+    .btn-refresh {
+      font-size: 12px;
+      font-weight: normal;
+      color: #0056b3;
+      cursor: pointer;
+      text-decoration: underline;
     }
   </style>
 </head>
@@ -186,14 +193,15 @@
     <button type="submit" id="btnSubmit">Simpan Data</button>
   </form>
 
-  <!-- Tampilan Input Terakhir -->
+  <!-- Tampilan Input Terakhir dari Google Sheets -->
   <div id="lastEntry" class="last-entry-card">
-    <h3>Input Terakhir Tersimpan:</h3>
-    <p><strong>Aktivitas:</strong> <span id="lastAktivitas">-</span></p>
-    <p><strong>Waktu:</strong> <span id="lastWaktu">-</span></p>
-    <p><strong>Kondisi:</strong> <span id="lastKondisi">-</span></p>
-    <p id="lastSusuRow" style="display: none;"><strong>Susu:</strong> <span id="lastSusu">-</span></p>
-    <p id="lastDetailRow" style="display: none;"><strong>Catatan:</strong> <span id="lastDetail">-</span></p>
+    <h3>
+      <span>Aktivitas Terakhir (Spreadsheet)</span>
+      <span class="btn-refresh" onclick="fetchLastEntryFromSheet()">🔄 Refresh</span>
+    </h3>
+    <div id="lastEntryContent">
+      <p style="color: #666; font-style: italic;">Memuat data dari Google Sheets...</p>
+    </div>
   </div>
 </div>
 
@@ -201,9 +209,9 @@
   // URL Web App Google Apps Script
   const scriptURL = 'https://script.google.com/macros/s/AKfycbz9kuR_d_JTQAbpOq-JEVuiHXkFF213Nw0hHY5bjpa-9bnheoMVocTXFgpJLcvOZdaMBA/exec';
 
-  // 1. Mengisi Tanggal & Jam Mulai Otomatis Saat Web Dibuka
   window.addEventListener('DOMContentLoaded', () => {
     resetDateTime();
+    fetchLastEntryFromSheet(); // Ambil data terakhir dari Google Sheets saat pertama kali dibuka
   });
 
   function resetDateTime() {
@@ -216,14 +224,66 @@
     document.getElementById('jamSelesai').value = '';
   }
 
-  // 2. Tampilkan/Sembunyikan Opsi Susu
   function toggleSusuFields() {
     const me = document.getElementById('namaAktivitas').value;
     const susuDiv = document.getElementById('susuFields');
     susuDiv.style.display = (me === 'Minum Susu') ? 'block' : 'none';
   }
 
-  // 3. Proses Pengiriman Data Form ke Apps Script
+  // Mengambil Data Baris Terakhir Langsung dari Google Sheets via GET Request
+  function fetchLastEntryFromSheet() {
+    const container = document.getElementById('lastEntryContent');
+    container.innerHTML = '<p style="color: #666; font-style: italic;">Memuat data terbaru...</p>';
+
+    fetch(scriptURL)
+      .then(response => response.json())
+      .then(data => {
+        if (!data) {
+          container.innerHTML = '<p style="color: #777;">Belum ada data di Spreadsheet.</p>';
+          return;
+        }
+
+        renderLastEntryUI(data);
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+        container.innerHTML = '<p style="color: #d32f2f;">Gagal memuat data terakhir dari Spreadsheet.</p>';
+      });
+  }
+
+  // Fungsi untuk Menampilkan Data ke Komponen Kartu
+  function renderLastEntryUI(data) {
+    let waktuText = `${data.tanggal || ''} (${data.jamMulai || '-'}`;
+    if (data.jamSelesai) {
+      waktuText += ` - ${data.jamSelesai}`;
+    }
+    waktuText += `)`;
+
+    let susuHTML = '';
+    if (data.namaAktivitas === 'Minum Susu' && (data.jumlahSusu || data.sumberSusu)) {
+      let susuDetail = '';
+      if (data.jumlahSusu) susuDetail += `${data.jumlahSusu} ml `;
+      if (data.sumberSusu) susuDetail += `(${data.sumberSusu})`;
+      susuHTML = `<p><strong>Susu:</strong> ${susuDetail}</p>`;
+    }
+
+    let detailHTML = '';
+    if (data.detailAktivitas && String(data.detailAktivitas).trim() !== '') {
+      detailHTML = `<p><strong>Catatan:</strong> ${data.detailAktivitas}</p>`;
+    }
+
+    const html = `
+      <p><strong>Aktivitas:</strong> ${data.namaAktivitas || '-'}</p>
+      <p><strong>Waktu:</strong> ${waktuText}</p>
+      <p><strong>Kondisi:</strong> ${data.kondisiBayi || '-'}</p>
+      ${susuHTML}
+      ${detailHTML}
+    `;
+
+    document.getElementById('lastEntryContent').innerHTML = html;
+  }
+
+  // Proses Submit Form
   const form = document.getElementById('babyForm');
   const btnSubmit = document.getElementById('btnSubmit');
 
@@ -255,12 +315,12 @@
     .then(() => {
       alert('Data aktivitas bayi berhasil disimpan!');
 
-      // Update Tampilan Input Terakhir
-      showLastEntry(payload);
-
       form.reset();
       resetDateTime();
       toggleSusuFields();
+      
+      // Ambil kembali data terakhir dari Spreadsheet setelah penambahan data baru
+      setTimeout(fetchLastEntryFromSheet, 1000);
     })
     .catch(error => {
       alert('Gagal mengirim data: ' + error.message);
@@ -270,44 +330,6 @@
       btnSubmit.innerText = 'Simpan Data';
     });
   });
-
-  // Fungsi memperbarui komponen Input Terakhir
-  function showLastEntry(data) {
-    document.getElementById('lastAktivitas').innerText = data.namaAktivitas;
-    
-    let waktuText = `${data.tanggal} (${data.jamMulai}`;
-    if (data.jamSelesai) {
-      waktuText += ` - ${data.jamSelesai}`;
-    }
-    waktuText += `)`;
-    document.getElementById('lastWaktu').innerText = waktuText;
-
-    document.getElementById('lastKondisi').innerText = data.kondisiBayi;
-
-    // Detail Susu jika ada
-    const lastSusuRow = document.getElementById('lastSusuRow');
-    if (data.namaAktivitas === 'Minum Susu' && (data.jumlahSusu || data.sumberSusu)) {
-      let susuDetail = '';
-      if (data.jumlahSusu) susuDetail += `${data.jumlahSusu} ml `;
-      if (data.sumberSusu) susuDetail += `(${data.sumberSusu})`;
-      document.getElementById('lastSusu').innerText = susuDetail;
-      lastSusuRow.style.display = 'block';
-    } else {
-      lastSusuRow.style.display = 'none';
-    }
-
-    // Detail Catatan jika ada
-    const lastDetailRow = document.getElementById('lastDetailRow');
-    if (data.detailAktivitas.trim() !== '') {
-      document.getElementById('lastDetail').innerText = data.detailAktivitas;
-      lastDetailRow.style.display = 'block';
-    } else {
-      lastDetailRow.style.display = 'none';
-    }
-
-    // Tampilkan kotak info
-    document.getElementById('lastEntry').style.display = 'block';
-  }
 </script>
 
 </body>
