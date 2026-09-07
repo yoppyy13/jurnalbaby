@@ -1,79 +1,162 @@
-const scriptURL = 'https://script.google.com/macros/s/AKfycbyqC2h5_fAUoqIUlAaFodDkrltCnoIudA5tpw_Ko8cl02eI3bWlgXwFshDMAF3O6KDjzg/exec';
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jurnal Aktivitas Bayi</title>
+  <style>
+    * { box-sizing: border-box; font-family: sans-serif; }
+    body { background-color: #f4f6f8; margin: 0; padding: 20px; }
+    .card { background: white; max-width: 500px; margin: 0 auto; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    h2 { margin-top: 0; color: #333; text-align: center; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+    input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+    button { width: 100%; background-color: #4CAF50; color: white; border: none; padding: 12px; font-size: 16px; border-radius: 4px; cursor: pointer; }
+    button:hover { background-color: #45a049; }
+    .status-msg { margin-top: 15px; text-align: center; font-weight: bold; }
+  </style>
+</head>
+<body>
 
-window.addEventListener('DOMContentLoaded', () => {
-  resetDateTime();
-  fetchLastEntryFromSheet();
-});
+  <div class="card">
+    <h2>Catat Aktivitas Bayi</h2>
+    
+    <form id="babyForm">
+      <div class="form-group">
+        <label for="tanggal">Tanggal:</label>
+        <input type="date" id="tanggal" name="tanggal" required>
+      </div>
 
-function resetDateTime() {
-  const now = new Date();
-  document.getElementById('tanggal').valueAsDate = now;
-  const jam = String(now.getHours()).padStart(2, '0');
-  const menit = String(now.getMinutes()).padStart(2, '0');
-  document.getElementById('jamMulai').value = `${jam}:${menit}`;
-  document.getElementById('jamSelesai').value = '';
-}
+      <div class="form-group">
+        <label for="jamMulai">Jam Mulai:</label>
+        <input type="time" id="jamMulai" name="jamMulai" required>
+      </div>
 
-function toggleSusuFields() {
-  const me = document.getElementById('namaAktivitas').value;
-  document.getElementById('susuFields').style.display = (me === 'Minum Susu') ? 'block' : 'none';
-}
+      <div class="form-group">
+        <label for="jamSelesai">Jam Selesai (Opsional):</label>
+        <input type="time" id="jamSelesai" name="jamSelesai">
+      </div>
 
-function fetchLastEntryFromSheet() {
-  const container = document.getElementById('lastEntryContent');
-  if (container) {
-    container.innerHTML = '<p style="color: #666; font-style: italic;">Memuat data terbaru...</p>';
-  }
+      <div class="form-group">
+        <label for="namaAktivitas">Jenis Aktivitas:</label>
+        <select id="namaAktivitas" name="namaAktivitas" onchange="toggleSusuFields()" required>
+          <option value="">-- Pilih Aktivitas --</option>
+          <option value="Minum Susu">Minum Susu</option>
+          <option value="Tidur">Tidur</option>
+          <option value="Ganti Popok">Ganti Popok</option>
+          <option value="Mandi">Mandi</option>
+          <option value="Main / Tummy Time">Main / Tummy Time</option>
+          <option value="Lainnya">Lainnya</option>
+        </select>
+      </div>
 
-  // Hapus script tag lama
-  const oldScript = document.getElementById('jsonpScript');
-  if (oldScript) oldScript.remove();
+      <!-- Field Khusus Minum Susu -->
+      <div id="susuFields" style="display: none;">
+        <div class="form-group">
+          <label for="jumlahSusu">Jumlah Susu (ml):</label>
+          <input type="number" id="jumlahSusu" name="jumlahSusu" placeholder="Contoh: 90">
+        </div>
 
-  // Injeksi Script Tag Baru
-  const script = document.createElement('script');
-  script.id = 'jsonpScript';
-  script.src = `${scriptURL}?callback=handleLastEntryResponse&_=${new Date().getTime()}`;
-  
-  script.onerror = function() {
-    if (container) {
-      container.innerHTML = '<p style="color: #d32f2f;">Gagal memuat data. Pastikan versi Deployment terbaru sudah dipublish.</p>';
+        <div class="form-group">
+          <label for="sumberSusu">Sumber Susu:</label>
+          <select id="sumberSusu" name="sumberSusu">
+            <option value="">-- Pilih Sumber --</option>
+            <option value="DBF">DBF (Direct Breastfeeding)</option>
+            <option value="ASIP">ASIP (Apusan / Botol)</option>
+            <option value="Susu Formula">Susu Formula</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="kondisiBayi">Kondisi / Suasana Hati Bayi:</label>
+        <select id="kondisiBayi" name="kondisiBayi">
+          <option value="Tenang / Senang">Tenang / Senang</option>
+          <option value="Rewel / Menangis">Rewel / Menangis</option>
+          <option value="Mengantuk">Mengantuk</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="detailAktivitas">Catatan Tambahan:</label>
+        <textarea id="detailAktivitas" name="detailAktivitas" rows="3" placeholder="Catatan opsional..."></textarea>
+      </div>
+
+      <button type="submit" id="submitBtn">Simpan Aktivitas</button>
+    </form>
+
+    <div id="statusMsg" class="status-msg"></div>
+  </div>
+
+  <script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyMx6tYX1E2MkfFTponKFBsq-sz0eD8svyJErMdikMMhevxky39KjeL83ZRVeH7sUuu/exec';
+
+    window.addEventListener('DOMContentLoaded', () => {
+      resetDateTime();
+    });
+
+    function resetDateTime() {
+      const now = new Date();
+      document.getElementById('tanggal').valueAsDate = now;
+      const jam = String(now.getHours()).padStart(2, '0');
+      const menit = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('jamMulai').value = `${jam}:${menit}`;
+      document.getElementById('jamSelesai').value = '';
     }
-  };
 
-  document.body.appendChild(script);
-}
+    function toggleSusuFields() {
+      const me = document.getElementById('namaAktivitas').value;
+      document.getElementById('susuFields').style.display = (me === 'Minum Susu') ? 'block' : 'none';
+    }
 
-function handleLastEntryResponse(data) {
-  const container = document.getElementById('lastEntryContent');
-  if (!container) return;
+    document.getElementById('babyForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const submitBtn = document.getElementById('submitBtn');
+      const statusMsg = document.getElementById('statusMsg');
+      
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Menyimpan...';
+      statusMsg.innerText = '';
 
-  if (!data || data.error) {
-    container.innerHTML = '<p style="color: #777;">Belum ada data di Spreadsheet.</p>';
-    return;
-  }
+      const formData = {
+        tanggal: document.getElementById('tanggal').value,
+        jamMulai: document.getElementById('jamMulai').value,
+        jamSelesai: document.getElementById('jamSelesai').value,
+        namaAktivitas: document.getElementById('namaAktivitas').value,
+        jumlahSusu: document.getElementById('jumlahSusu').value,
+        sumberSusu: document.getElementById('sumberSusu').value,
+        kondisiBayi: document.getElementById('kondisiBayi').value,
+        detailAktivitas: document.getElementById('detailAktivitas').value
+      };
 
-  let waktuText = `${data.tanggal || ''} (${data.jamMulai || '-'}`;
-  if (data.jamSelesai) waktuText += ` - ${data.jamSelesai}`;
-  waktuText += `)`;
-
-  let susuHTML = '';
-  if (data.namaAktivitas === 'Minum Susu' && (data.jumlahSusu || data.sumberSusu)) {
-    let susuDetail = '';
-    if (data.jumlahSusu) susuDetail += `${data.jumlahSusu} ml `;
-    if (data.sumberSusu) susuDetail += `(${data.sumberSusu})`;
-    susuHTML = `<p><strong>Susu:</strong> ${susuDetail}</p>`;
-  }
-
-  let detailHTML = '';
-  if (data.detailAktivitas && String(data.detailAktivitas).trim() !== '') {
-    detailHTML = `<p><strong>Catatan:</strong> ${data.detailAktivitas}</p>`;
-  }
-
-  container.innerHTML = `
-    <p><strong>Aktivitas:</strong> ${data.namaAktivitas || '-'}</p>
-    <p><strong>Waktu:</strong> ${waktuText}</p>
-    <p><strong>Kondisi:</strong> ${data.kondisiBayi || '-'}</p>
-    ${susuHTML}
-    ${detailHTML}
-  `;
-}
+      fetch(scriptURL, {
+        method: 'POST',
+        body: JSON.stringify(formData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          statusMsg.style.color = 'green';
+          statusMsg.innerText = 'Data berhasil disimpan!';
+          document.getElementById('babyForm').reset();
+          resetDateTime();
+          toggleSusuFields();
+        } else {
+          throw new Error(data.message || 'Gagal menyimpan');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        statusMsg.style.color = 'red';
+        statusMsg.innerText = 'Gagal menyimpan data. Coba lagi.';
+      })
+      .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Simpan Aktivitas';
+      });
+    });
+  </script>
+</body>
+</html>
