@@ -12,6 +12,7 @@
     .form-group { margin-bottom: 15px; }
     label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
     input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+    input[readonly] { background-color: #e9ecef; color: #495057; cursor: not-allowed; }
     button { width: 100%; background-color: #4CAF50; color: white; border: none; padding: 12px; font-size: 16px; border-radius: 4px; cursor: pointer; }
     button:hover { background-color: #45a049; }
     .status-msg { margin-top: 15px; text-align: center; font-weight: bold; }
@@ -30,12 +31,17 @@
 
       <div class="form-group">
         <label for="jamMulai">Jam Mulai:</label>
-        <input type="time" id="jamMulai" name="jamMulai" required>
+        <input type="time" id="jamMulai" name="jamMulai" onchange="hitungDurasi()" required>
       </div>
 
       <div class="form-group">
         <label for="jamSelesai">Jam Selesai (Opsional):</label>
-        <input type="time" id="jamSelesai" name="jamSelesai">
+        <input type="time" id="jamSelesai" name="jamSelesai" onchange="hitungDurasi()">
+      </div>
+
+      <div class="form-group">
+        <label for="durasi">Durasi Aktivitas:</label>
+        <input type="text" id="durasi" name="durasi" placeholder="Otomatis terhitung..." readonly>
       </div>
 
       <div class="form-group">
@@ -72,6 +78,7 @@
       <div class="form-group">
         <label for="kondisiBayi">Kondisi / Suasana Hati Bayi:</label>
         <select id="kondisiBayi" name="kondisiBayi">
+          <option value="">-- Pilih Kondisi --</option>
           <option value="Tenang / Senang">Tenang / Senang</option>
           <option value="Rewel / Menangis">Rewel / Menangis</option>
           <option value="Mengantuk">Mengantuk</option>
@@ -90,7 +97,7 @@
   </div>
 
   <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbyMx6tYX1E2MkfFTponKFBsq-sz0eD8svyJErMdikMMhevxky39KjeL83ZRVeH7sUuu/exec';
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbxHVD-XSTlHwkxxaSdbMNhKQa8uYq46XKJ3Gs5DEpFLon9Gv1CzG0npijrItkQym6DQHw/exec';
 
     window.addEventListener('DOMContentLoaded', () => {
       resetDateTime();
@@ -103,11 +110,50 @@
       const menit = String(now.getMinutes()).padStart(2, '0');
       document.getElementById('jamMulai').value = `${jam}:${menit}`;
       document.getElementById('jamSelesai').value = '';
+      document.getElementById('durasi').value = '';
     }
 
     function toggleSusuFields() {
       const me = document.getElementById('namaAktivitas').value;
-      document.getElementById('susuFields').style.display = (me === 'Minum Susu') ? 'block' : 'none';
+      const isSusu = (me === 'Minum Susu');
+      document.getElementById('susuFields').style.display = isSusu ? 'block' : 'none';
+      
+      // Jika bukan Minum Susu, atur nilainya jadi kosong agar nanti terkirim sebagai "-"
+      if (!isSusu) {
+        document.getElementById('jumlahSusu').value = '';
+        document.getElementById('sumberSusu').value = '';
+      }
+    }
+
+    function hitungDurasi() {
+      const jamMulaiVal = document.getElementById('jamMulai').value;
+      const jamSelesaiVal = document.getElementById('jamSelesai').value;
+      const durasiInput = document.getElementById('durasi');
+
+      if (!jamMulaiVal || !jamSelesaiVal) {
+        durasiInput.value = '';
+        return;
+      }
+
+      const [h1, m1] = jamMulaiVal.split(':').map(Number);
+      const [h2, m2] = jamSelesaiVal.split(':').map(Number);
+
+      let menitMulai = h1 * 60 + m1;
+      let menitSelesai = h2 * 60 + m2;
+
+      if (menitSelesai < menitMulai) {
+        menitSelesai += 24 * 60;
+      }
+
+      const selisihMenit = menitSelesai - menitMulai;
+      const jam = Math.floor(selisihMenit / 60);
+      const menit = selisihMenit % 60;
+
+      let teksDurasi = '';
+      if (jam > 0) teksDurasi += `${jam} jam `;
+      if (menit > 0 || jam === 0) teksDurasi += `${menit} menit`;
+
+      durasiInput.value = teksDurasi.trim();
     }
 
     document.getElementById('babyForm').addEventListener('submit', function(e) {
@@ -120,15 +166,24 @@
       submitBtn.innerText = 'Menyimpan...';
       statusMsg.innerText = '';
 
+      // Fungsi bantu untuk mengganti nilai kosong dengan "-"
+      const getValueOrDash = (id) => {
+        const val = document.getElementById(id).value.trim();
+        return val !== '' ? val : '-';
+      };
+
+      const isSusu = document.getElementById('namaAktivitas').value === 'Minum Susu';
+
       const formData = {
-        tanggal: document.getElementById('tanggal').value,
-        jamMulai: document.getElementById('jamMulai').value,
-        jamSelesai: document.getElementById('jamSelesai').value,
-        namaAktivitas: document.getElementById('namaAktivitas').value,
-        jumlahSusu: document.getElementById('jumlahSusu').value,
-        sumberSusu: document.getElementById('sumberSusu').value,
-        kondisiBayi: document.getElementById('kondisiBayi').value,
-        detailAktivitas: document.getElementById('detailAktivitas').value
+        tanggal: getValueOrDash('tanggal'),
+        jamMulai: getValueOrDash('jamMulai'),
+        jamSelesai: getValueOrDash('jamSelesai'),
+        durasi: getValueOrDash('durasi'),
+        namaAktivitas: getValueOrDash('namaAktivitas'),
+        jumlahSusu: isSusu ? getValueOrDash('jumlahSusu') : '-',
+        sumberSusu: isSusu ? getValueOrDash('sumberSusu') : '-',
+        kondisiBayi: getValueOrDash('kondisiBayi'),
+        detailAktivitas: getValueOrDash('detailAktivitas')
       };
 
       fetch(scriptURL, {
