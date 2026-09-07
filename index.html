@@ -1,118 +1,237 @@
-const scriptURL = 'https://script.google.com/macros/s/AKfycbwkAXBfAUCMpajQMLX-sezCepRvbIEeXnFTaM93UDr8ZlbKr_d17PCnl-qtvYRF7rfD6g/exec';
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jurnal Aktivitas Bayi</title>
+  <style>
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: #f4f7f6; margin: 0; padding: 15px; display: flex; justify-content: center; }
+    .container { background: #ffffff; width: 100%; max-width: 480px; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    h2 { text-align: center; color: #333; margin-top: 0; margin-bottom: 20px; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 6px; font-weight: 600; color: #444; font-size: 14px; }
+    input, select, textarea { width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; outline: none; }
+    input:focus, select:focus, textarea:focus { border-color: #4CAF50; }
+    .susu-group { display: none; background: #eef7ee; padding: 12px; border-radius: 8px; border: 1px solid #c8e6c9; margin-bottom: 15px; }
+    .time-row { display: flex; gap: 10px; }
+    .time-row .form-group { flex: 1; }
+    button { background-color: #4CAF50; color: white; border: none; padding: 12px; width: 100%; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 10px; }
+    button:hover { background-color: #45a049; }
+    button:disabled { background-color: #cccccc; cursor: not-allowed; }
+    .last-entry-card { margin-top: 25px; padding: 15px; background-color: #f0f7ff; border: 1px solid #b3d7ff; border-radius: 8px; }
+    .last-entry-card h3 { margin-top: 0; margin-bottom: 10px; font-size: 15px; color: #0056b3; display: flex; justify-content: space-between; align-items: center; }
+    .last-entry-card p { margin: 4px 0; font-size: 13px; color: #333; }
+    .btn-refresh { font-size: 12px; font-weight: normal; color: #0056b3; cursor: pointer; text-decoration: underline; }
+  </style>
+</head>
+<body>
 
-window.addEventListener('DOMContentLoaded', () => {
-  resetDateTime();
-  fetchLastEntryFromSheet();
-});
-
-function resetDateTime() {
-  const now = new Date();
-  document.getElementById('tanggal').valueAsDate = now;
-  const jam = String(now.getHours()).padStart(2, '0');
-  const menit = String(now.getMinutes()).padStart(2, '0');
-  document.getElementById('jamMulai').value = `${jam}:${menit}`;
-  document.getElementById('jamSelesai').value = '';
-}
-
-function toggleSusuFields() {
-  const me = document.getElementById('namaAktivitas').value;
-  document.getElementById('susuFields').style.display = (me === 'Minum Susu') ? 'block' : 'none';
-}
-
-// FUNGSI MENGAMBIL DATA VIA JSONP (BEBAS CORS)
-function fetchLastEntryFromSheet() {
-  const container = document.getElementById('lastEntryContent');
-  container.innerHTML = '<p style="color: #666; font-style: italic;">Memuat data terbaru...</p>';
-
-  // Hapus script callback lama jika ada
-  const oldScript = document.getElementById('jsonpCallbackScript');
-  if (oldScript) oldScript.remove();
-
-  // Buat element script baru
-  const script = document.createElement('script');
-  script.id = 'jsonpCallbackScript';
-  script.src = `${scriptURL}?callback=handleLastEntryResponse&_=${new Date().getTime()}`;
+<div class="container">
+  <h2>Jurnal Aktivitas Bayi</h2>
   
-  script.onerror = function() {
-    container.innerHTML = '<p style="color: #d32f2f;">Gagal memuat data. Pastikan Deployment Akses = "Anyone".</p>';
-  };
+  <form id="babyForm">
+    <div class="form-group">
+      <label for="tanggal">Tanggal</label>
+      <input type="date" id="tanggal" required>
+    </div>
 
-  document.body.appendChild(script);
-}
+    <div class="time-row">
+      <div class="form-group">
+        <label for="jamMulai">Jam Mulai</label>
+        <input type="time" id="jamMulai" required>
+      </div>
+      <div class="form-group">
+        <label for="jamSelesai">Jam Selesai</label>
+        <input type="time" id="jamSelesai">
+      </div>
+    </div>
 
-// CALLBACK FUNCTION UNTUK MENERIMA DATA JSONP
-function handleLastEntryResponse(data) {
-  const container = document.getElementById('lastEntryContent');
+    <div class="form-group">
+      <label for="namaAktivitas">Nama Aktivitas</label>
+      <select id="namaAktivitas" onchange="toggleSusuFields()" required>
+        <option value="">-- Pilih Aktivitas --</option>
+        <option value="Minum Susu">Minum Susu</option>
+        <option value="Tidur">Tidur</option>
+        <option value="Ganti Popok">Ganti Popok</option>
+        <option value="Bermain / Tummy Time">Bermain / Tummy Time</option>
+        <option value="Mandi">Mandi</option>
+        <option value="Lainnya">Lainnya</option>
+      </select>
+    </div>
 
-  if (!data || data.error) {
-    container.innerHTML = '<p style="color: #777;">Belum ada data di Spreadsheet.</p>';
-    return;
-  }
+    <div id="susuFields" class="susu-group">
+      <div class="form-group">
+        <label for="jumlahSusu">Jumlah Susu (ml)</label>
+        <input type="number" id="jumlahSusu" placeholder="Contoh: 120">
+      </div>
+      <div class="form-group">
+        <label for="sumberSusu">Sumber Susu</label>
+        <select id="sumberSusu">
+          <option value="">-- Pilih Sumber --</option>
+          <option value="DBF (Direct Breastfeeding)">DBF / Menyusu Langsung</option>
+          <option value="ASIP (Susu Perah)">ASIP (Susu Perah)</option>
+          <option value="Susu Formula">Susu Formula</option>
+        </select>
+      </div>
+    </div>
 
-  let waktuText = `${data.tanggal || ''} (${data.jamMulai || '-'}`;
-  if (data.jamSelesai) waktuText += ` - ${data.jamSelesai}`;
-  waktuText += `)`;
+    <div class="form-group">
+      <label for="kondisiBayi">Kondisi Bayi</label>
+      <select id="kondisiBayi" required>
+        <option value="Ceria / Senang">Ceria / Senang</option>
+        <option value="Tenang">Tenang</option>
+        <option value="Mengantuk">Mengantuk</option>
+        <option value="Rewel">Rewel</option>
+        <option value="Sakit / Demam">Sakit / Demam</option>
+      </select>
+    </div>
 
-  let susuHTML = '';
-  if (data.namaAktivitas === 'Minum Susu' && (data.jumlahSusu || data.sumberSusu)) {
-    let susuDetail = '';
-    if (data.jumlahSusu) susuDetail += `${data.jumlahSusu} ml `;
-    if (data.sumberSusu) susuDetail += `(${data.sumberSusu})`;
-    susuHTML = `<p><strong>Susu:</strong> ${susuDetail}</p>`;
-  }
+    <div class="form-group">
+      <label for="detailAktivitas">Detail / Catatan Aktivitas</label>
+      <textarea id="detailAktivitas" rows="3" placeholder="Catatan tambahan..."></textarea>
+    </div>
 
-  let detailHTML = '';
-  if (data.detailAktivitas && String(data.detailAktivitas).trim() !== '') {
-    detailHTML = `<p><strong>Catatan:</strong> ${data.detailAktivitas}</p>`;
-  }
+    <button type="submit" id="btnSubmit">Simpan Data</button>
+  </form>
 
-  container.innerHTML = `
-    <p><strong>Aktivitas:</strong> ${data.namaAktivitas || '-'}</p>
-    <p><strong>Waktu:</strong> ${waktuText}</p>
-    <p><strong>Kondisi:</strong> ${data.kondisiBayi || '-'}</p>
-    ${susuHTML}
-    ${detailHTML}
-  `;
-}
+  <div id="lastEntry" class="last-entry-card">
+    <h3>
+      <span>Aktivitas Terakhir (Spreadsheet)</span>
+      <span class="btn-refresh" onclick="fetchLastEntryFromSheet()">🔄 Refresh</span>
+    </h3>
+    <div id="lastEntryContent">
+      <p style="color: #666; font-style: italic;">Memuat data dari Google Sheets...</p>
+    </div>
+  </div>
+</div>
 
-// KIRIM DATA FORM (POST)
-const form = document.getElementById('babyForm');
-const btnSubmit = document.getElementById('btnSubmit');
+<script>
+  // PASTI-KAN URL INI SAMA DENGAN URL DEPLOYMENT GOOGLE APPS SCRIPT ANDA
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbxH21sWVbCUTSFcM0xjETcC7wjIlOLq0R4PhRIiDYXVi9M9avMkUQKHOWnOudVh99aT/exec';
 
-form.addEventListener('submit', e => {
-  e.preventDefault();
-  btnSubmit.disabled = true;
-  btnSubmit.innerText = 'Menyimpan...';
-
-  const payload = {
-    tanggal: document.getElementById('tanggal').value,
-    jamMulai: document.getElementById('jamMulai').value,
-    jamSelesai: document.getElementById('jamSelesai').value,
-    namaAktivitas: document.getElementById('namaAktivitas').value,
-    detailAktivitas: document.getElementById('detailAktivitas').value,
-    jumlahSusu: document.getElementById('jumlahSusu').value,
-    sumberSusu: document.getElementById('sumberSusu').value,
-    kondisiBayi: document.getElementById('kondisiBayi').value
-  };
-
-  fetch(scriptURL, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  })
-  .then(() => {
-    alert('Data aktivitas bayi berhasil disimpan!');
-    form.reset();
+  window.addEventListener('DOMContentLoaded', () => {
     resetDateTime();
-    toggleSusuFields();
-    setTimeout(fetchLastEntryFromSheet, 1500);
-  })
-  .catch(error => {
-    alert('Gagal mengirim data: ' + error.message);
-  })
-  .finally(() => {
-    btnSubmit.disabled = false;
-    btnSubmit.innerText = 'Simpan Data';
+    fetchLastEntryFromSheet();
   });
-});
+
+  function resetDateTime() {
+    const now = new Date();
+    document.getElementById('tanggal').valueAsDate = now;
+    const jam = String(now.getHours()).padStart(2, '0');
+    const menit = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById('jamMulai').value = `${jam}:${menit}`;
+    document.getElementById('jamSelesai').value = '';
+  }
+
+  function toggleSusuFields() {
+    const me = document.getElementById('namaAktivitas').value;
+    document.getElementById('susuFields').style.display = (me === 'Minum Susu') ? 'block' : 'none';
+  }
+
+  // 1. MEMINTA DATA VIA JSONP (MENYELAMATKAN DARI ERROR CORS)
+  function fetchLastEntryFromSheet() {
+    const container = document.getElementById('lastEntryContent');
+    if (container) {
+      container.innerHTML = '<p style="color: #666; font-style: italic;">Memuat data terbaru...</p>';
+    }
+
+    // Hapus script tag lama jika ada
+    const oldScript = document.getElementById('jsonpScript');
+    if (oldScript) oldScript.remove();
+
+    // Buat element script baru
+    const script = document.createElement('script');
+    script.id = 'jsonpScript';
+    script.src = `${scriptURL}?callback=handleLastEntryResponse&_=${new Date().getTime()}`;
+    
+    script.onerror = function() {
+      if (container) {
+        container.innerHTML = '<p style="color: #d32f2f;">Gagal memuat data. Cek koneksi atau Web App Deployment.</p>';
+      }
+    };
+
+    document.body.appendChild(script);
+  }
+
+  // 2. CALLBACK UNTUK MENERIMA DAN MEMPROSES TAMPILAN DATA
+  function handleLastEntryResponse(data) {
+    const container = document.getElementById('lastEntryContent');
+    if (!container) return;
+
+    if (!data || data.error) {
+      container.innerHTML = '<p style="color: #777;">Belum ada data di Spreadsheet.</p>';
+      return;
+    }
+
+    let waktuText = `${data.tanggal || ''} (${data.jamMulai || '-'}`;
+    if (data.jamSelesai) waktuText += ` - ${data.jamSelesai}`;
+    waktuText += `)`;
+
+    let susuHTML = '';
+    if (data.namaAktivitas === 'Minum Susu' && (data.jumlahSusu || data.sumberSusu)) {
+      let susuDetail = '';
+      if (data.jumlahSusu) susuDetail += `${data.jumlahSusu} ml `;
+      if (data.sumberSusu) susuDetail += `(${data.sumberSusu})`;
+      susuHTML = `<p><strong>Susu:</strong> ${susuDetail}</p>`;
+    }
+
+    let detailHTML = '';
+    if (data.detailAktivitas && String(data.detailAktivitas).trim() !== '') {
+      detailHTML = `<p><strong>Catatan:</strong> ${data.detailAktivitas}</p>`;
+    }
+
+    container.innerHTML = `
+      <p><strong>Aktivitas:</strong> ${data.namaAktivitas || '-'}</p>
+      <p><strong>Waktu:</strong> ${waktuText}</p>
+      <p><strong>Kondisi:</strong> ${data.kondisiBayi || '-'}</p>
+      ${susuHTML}
+      ${detailHTML}
+    `;
+  }
+
+  // 3. MENYIMPAN DATA (POST)
+  const form = document.getElementById('babyForm');
+  const btnSubmit = document.getElementById('btnSubmit');
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    btnSubmit.disabled = true;
+    btnSubmit.innerText = 'Menyimpan...';
+
+    const payload = {
+      tanggal: document.getElementById('tanggal').value,
+      jamMulai: document.getElementById('jamMulai').value,
+      jamSelesai: document.getElementById('jamSelesai').value,
+      namaAktivitas: document.getElementById('namaAktivitas').value,
+      detailAktivitas: document.getElementById('detailAktivitas').value,
+      jumlahSusu: document.getElementById('jumlahSusu').value,
+      sumberSusu: document.getElementById('sumberSusu').value,
+      kondisiBayi: document.getElementById('kondisiBayi').value
+    };
+
+    fetch(scriptURL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(() => {
+      alert('Data aktivitas bayi berhasil disimpan!');
+      form.reset();
+      resetDateTime();
+      toggleSusuFields();
+      setTimeout(fetchLastEntryFromSheet, 2000);
+    })
+    .catch(error => {
+      alert('Gagal mengirim data: ' + error.message);
+    })
+    .finally(() => {
+      btnSubmit.disabled = false;
+      btnSubmit.innerText = 'Simpan Data';
+    });
+  });
+</script>
+
+</body>
+</html>
