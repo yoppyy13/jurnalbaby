@@ -5,54 +5,133 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Jurnal Aktivitas Bayi</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 500px; margin: 20px auto; padding: 15px; }
-    .form-group { margin-bottom: 15px; }
-    label { display: block; margin-bottom: 5px; font-weight: bold; }
-    input, select, textarea { width: 100%; padding: 8px; box-sizing: border-box; }
-    .susu-group { display: none; background: #f9f9f9; padding: 10px; border-radius: 5px; }
-    button { background: #4CAF50; color: white; padding: 10px; border: none; width: 100%; cursor: pointer; }
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      background-color: #f4f7f6;
+      margin: 0;
+      padding: 15px;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      background: #ffffff;
+      width: 100%;
+      max-width: 480px;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: #444;
+      font-size: 14px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: #4CAF50;
+    }
+    .susu-group {
+      display: none;
+      background: #eef7ee;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #c8e6c9;
+      margin-bottom: 15px;
+    }
+    .time-row {
+      display: flex;
+      gap: 10px;
+    }
+    .time-row .form-group {
+      flex: 1;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 12px;
+      width: 100%;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background-color 0.2s;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
 
-  <h2>Input Aktivitas Bayi</h2>
+<div class="container">
+  <h2>Jurnal Aktivitas Bayi</h2>
+  
   <form id="babyForm">
     <div class="form-group">
-      <label>Tanggal:</label>
+      <label for="tanggal">Tanggal</label>
       <input type="date" id="tanggal" required>
     </div>
 
-    <div class="form-group">
-      <label>Jam Mulai:</label>
-      <input type="time" id="jamMulai" required>
+    <div class="time-row">
+      <div class="form-group">
+        <label for="jamMulai">Jam Mulai</label>
+        <input type="time" id="jamMulai" required>
+      </div>
+      <div class="form-group">
+        <label for="jamSelesai">Jam Selesai</label>
+        <input type="time" id="jamSelesai">
+      </div>
     </div>
 
     <div class="form-group">
-      <label>Jam Selesai:</label>
-      <input type="time" id="jamSelesai">
-    </div>
-
-    <div class="form-group">
-      <label>Nama Aktivitas:</label>
+      <label for="namaAktivitas">Nama Aktivitas</label>
       <select id="namaAktivitas" onchange="toggleSusuFields()" required>
         <option value="">-- Pilih Aktivitas --</option>
         <option value="Minum Susu">Minum Susu</option>
         <option value="Tidur">Tidur</option>
         <option value="Ganti Popok">Ganti Popok</option>
-        <option value="Bermain">Bermain</option>
+        <option value="Bermain / Tummy Time">Bermain / Tummy Time</option>
         <option value="Mandi">Mandi</option>
         <option value="Lainnya">Lainnya</option>
       </select>
     </div>
 
-    <!-- Group Khusus Minum Susu -->
+    <!-- Opsi Tambahan Jika Memilih Minum Susu -->
     <div id="susuFields" class="susu-group">
       <div class="form-group">
-        <label>Jumlah Susu (ml):</label>
+        <label for="jumlahSusu">Jumlah Susu (ml)</label>
         <input type="number" id="jumlahSusu" placeholder="Contoh: 120">
       </div>
       <div class="form-group">
-        <label>Sumber Susu:</label>
+        <label for="sumberSusu">Sumber Susu</label>
         <select id="sumberSusu">
           <option value="">-- Pilih Sumber --</option>
           <option value="DBF (Direct Breastfeeding)">DBF / Menyusu Langsung</option>
@@ -63,63 +142,97 @@
     </div>
 
     <div class="form-group">
-      <label>Kondisi Bayi:</label>
+      <label for="kondisiBayi">Kondisi Bayi</label>
       <select id="kondisiBayi" required>
-        <option value="Ceria">Ceria / Senang</option>
+        <option value="Ceria / Senang">Ceria / Senang</option>
         <option value="Tenang">Tenang</option>
-        <option value="Rewel">Rewel</option>
         <option value="Mengantuk">Mengantuk</option>
-        <option value="Sakit">Sakit / Demam</option>
+        <option value="Rewel">Rewel</option>
+        <option value="Sakit / Demam">Sakit / Demam</option>
       </select>
     </div>
 
     <div class="form-group">
-      <label>Detail Aktivitas / Catatan:</label>
-      <textarea id="detailAktivitas" rows="3" placeholder="Catatan tambahan..."></textarea>
+      <label for="detailAktivitas">Detail / Catatan Aktivitas</label>
+      <textarea id="detailAktivitas" rows="3" placeholder="Catatan tambahan (misal: pup cair, tidur nyenyak)..."></textarea>
     </div>
 
-    <button type="submit">Simpan Aktivitas</button>
+    <button type="submit" id="btnSubmit">Simpan Data</button>
   </form>
+</div>
 
-  <script>
-    // Set tanggal hari ini secara otomatis
-    document.getElementById('tanggal').valueAsDate = new Date();
+<script>
+  // GANTI URL DI BAWAH INI DENGAN URL WEB APP DARI GOOGLE APPS SCRIPT ANDA
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbxB_Qn8mIjcu7hP6qS3TpRbQhssPVCT3FHtcsqTXMTEKqRgaF9BXHPvp2SXiPDmqZwFwA/exec';
 
-    // Tampilkan/Sembunyikan field susu
-    function toggleSusuFields() {
-      const me = document.getElementById('namaAktivitas').value;
-      const susuDiv = document.getElementById('susuFields');
-      susuDiv.style.display = (me === 'Minum Susu') ? 'block' : 'none';
-    }
+  // Otomatis isi tanggal hari ini dan jam saat ini di form
+  window.addEventListener('DOMContentLoaded', () => {
+    const now = new Date();
+    document.getElementById('tanggal').valueAsDate = now;
+    
+    const jam = String(now.getHours()).padStart(2, '0');
+    const menit = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById('jamMulai').value = `${jam}:${menit}`;
+  });
 
-    // Kirim Data ke Google Apps Script
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbyOY7pveGnCJ1i1ldz-4cKwNu4-nAvQl_NFEJe2PmavQKZVge1nW7r_hPHgvQqu9QxNUg/exec';
-    document.getElementById('babyForm').addEventListener('submit', e => {
-      e.preventDefault();
+  // Fungsi Tampil/Sembunyi Input Susu
+  function toggleSusuFields() {
+    const me = document.getElementById('namaAktivitas').value;
+    const susuDiv = document.getElementById('susuFields');
+    susuDiv.style.display = (me === 'Minum Susu') ? 'block' : 'none';
+  }
+
+  // Pengiriman Data Form
+  const form = document.getElementById('babyForm');
+  const btnSubmit = document.getElementById('btnSubmit');
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    
+    btnSubmit.disabled = true;
+    btnSubmit.innerText = 'Menyimpan...';
+
+    const payload = {
+      tanggal: document.getElementById('tanggal').value,
+      jamMulai: document.getElementById('jamMulai').value,
+      jamSelesai: document.getElementById('jamSelesai').value,
+      namaAktivitas: document.getElementById('namaAktivitas').value,
+      detailAktivitas: document.getElementById('detailAktivitas').value,
+      jumlahSusu: document.getElementById('jumlahSusu').value,
+      sumberSusu: document.getElementById('sumberSusu').value,
+      kondisiBayi: document.getElementById('kondisiBayi').value
+    };
+
+    fetch(scriptURL, {
+      method: 'POST',
+      mode: 'no-cors', // Mencegah blokir CORS di browser
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    })
+    .then(() => {
+      alert('Data aktivitas bayi berhasil disimpan!');
+      form.reset();
       
-      const payload = {
-        tanggal: document.getElementById('tanggal').value,
-        jamMulai: document.getElementById('jamMulai').value,
-        jamSelesai: document.getElementById('jamSelesai').value,
-        namaAktivitas: document.getElementById('namaAktivitas').value,
-        detailAktivitas: document.getElementById('detailAktivitas').value,
-        jumlahSusu: document.getElementById('jumlahSusu').value,
-        sumberSusu: document.getElementById('sumberSusu').value,
-        kondisiBayi: document.getElementById('kondisiBayi').value
-      };
-
-      fetch(scriptURL, {
-        method: 'POST',
-        body: JSON.stringify(payload)
-      })
-      .then(res => {
-        alert('Aktivitas berhasil dicatat!');
-        document.getElementById('babyForm').reset();
-        document.getElementById('tanggal').valueAsDate = new Date();
-        toggleSusuFields();
-      })
-      .catch(err => alert('Gagal menyimpan data: ' + err.message));
+      // Reset ulang ke tanggal dan jam saat ini
+      const now = new Date();
+      document.getElementById('tanggal').valueAsDate = now;
+      const jam = String(now.getHours()).padStart(2, '0');
+      const menit = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('jamMulai').value = `${jam}:${menit}`;
+      
+      toggleSusuFields();
+    })
+    .catch(error => {
+      alert('Gagal menyimpan data: ' + error.message);
+    })
+    .finally(() => {
+      btnSubmit.disabled = false;
+      btnSubmit.innerText = 'Simpan Data';
     });
-  </script>
+  });
+</script>
+
 </body>
 </html>
